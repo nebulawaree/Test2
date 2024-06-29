@@ -1,0 +1,64 @@
+local KEYBIND = 'Z' -- change the keybind to whatever you want
+
+if renderDupe then 
+    warn('[!] Dupe already loaded!')
+    return task.wait(9e9);
+end;
+
+local cloneref = cloneref or function(data: userdata) return data end;
+local Dupetoggled  = false;
+local getservice = function(service: string)
+    return cloneref(game:FindService(service));
+end;
+
+local getrandomvalue = function(tab: table)
+    return #tab > 0 and tab[math.random(1, #tab)] or ''
+end;
+
+local replicatedstorage = getservice('ReplicatedStorage');
+local inputservice = getservice('UserInputService');
+local remote = replicatedstorage:WaitForChild('rbxts_include'):WaitForChild('node_modules'):WaitForChild('@rbxts'):WaitForChild('net'):WaitForChild('out'):WaitForChild('_NetManaged'):WaitForChild('RequestMoneyHeld');
+
+task.spawn(function()
+    repeat 
+        task.wait()
+        if not Dupetoggled then 
+            continue
+        end;
+        remote:FireServer({value = 9e9})
+    until false;
+end);
+
+task.spawn(function()
+    repeat 
+        local success, ping = pcall(function() return getservice('Stats').PerformanceStats.Ping:GetValue() end)
+		if success and tonumber(ping) and ping > 1500 and Dupetoggled then
+            getservice('StarterGui'):SetCore('SendNotification', {
+                Title = 'Render',
+                Text = `Ping spike of {ping} detected! Dupe may be slow when turning off.`,
+                Duration = 8,
+            })
+            break
+        end
+        task.wait() 
+    until false
+end);
+
+inputservice.InputBegan:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode[KEYBIND] and inputservice:GetFocusedTextBox() == nil then 
+        Dupetoggled = not Dupetoggled;
+        getservice('StarterGui'):SetCore('SendNotification', {
+            Title = 'Render',
+            Text = `Dupe status has been set to {tostring(Dupetoggled):upper()}!.`,
+            Duration = 8,
+        })
+    end
+end)
+
+getservice('StarterGui'):SetCore('SendNotification', {
+    Title = 'Render',
+    Text = `Dupe/Dupe loaded, press {KEYBIND} on your keyboard to toggle.`,
+    Duration = 8,
+})
+
+getgenv().renderDupe = true
